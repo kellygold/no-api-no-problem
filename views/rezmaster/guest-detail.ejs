@@ -1,0 +1,91 @@
+<%- include('head') %>
+
+<div class="panel">
+  <div class="head"><%= guest.name %> — <%= guest.id %></div>
+  <div class="body">
+    <% if (booked) { %>
+      <div class="okbox">
+        Booked: <strong><%= booked.id %></strong> — <%= booked.roomSlug %>, <%= booked.checkin %> → <%= booked.checkout %>
+        at $<%= booked.nightlyRate %>/night (<%= booked.ratePlan %>). <a href="/rezmaster/reservations/<%= booked.id %>">View</a>
+      </div>
+    <% } %>
+    <div class="dl">
+      <dt>Loyalty tier</dt><dd><span class="pill <%= guest.loyaltyTier.toLowerCase() %>"><%= guest.loyaltyTier %></span></dd>
+      <dt>Corporate account</dt><dd><%= guest.corporateAccount || '—' %></dd>
+      <dt>Rate plan</dt><dd><strong><%= ratePlan %></strong> (<%= (guest.negotiatedPct*100).toFixed(0) %>% off rack)</dd>
+      <dt>Email</dt><dd><%= guest.email %></dd>
+      <dt>Phone</dt><dd><%= guest.phone %></dd>
+      <dt>Arriving</dt><dd><%= guest.arriving %></dd>
+      <dt>Guest notes</dt><dd><%= guest.notes %></dd>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="head">Rate Quote &amp; True Availability</div>
+  <div class="body">
+    <p class="tiny muted">Public sees only the rack rate and the public channel count. This guest's negotiated rate and the true inventory (including held rooms) are below.</p>
+    <table class="grid">
+      <thead>
+        <tr><th>Room type</th><th class="num">Rack (public)</th><th class="num">Negotiated</th><th class="num">Public avail.</th><th class="num">True avail.</th><th class="num">Held</th></tr>
+      </thead>
+      <tbody>
+        <% quotes.forEach(function (q) { %>
+          <tr>
+            <td><%= q.name %></td>
+            <td class="num">$<%= q.rackRate %></td>
+            <td class="num rate-hi">$<%= q.negotiated %></td>
+            <td class="num"><%= q.publicAvailable %><% if (q.publicAvailable===0){ %> <span class="tiny" style="color:#a11c1c">(sold out)</span><% } %></td>
+            <td class="num"><%= q.trueAvailable %></td>
+            <td class="num"><% if (q.held>0){ %><span class="pill held"><%= q.held %></span><% } else { %>—<% } %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="head">Make a Reservation</div>
+  <div class="body">
+    <form method="post" action="/rezmaster/reservations">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="hidden" name="guestId" value="<%= guest.id %>">
+      <div class="field">
+        <label for="roomSlug">Room type</label>
+        <select id="roomSlug" name="roomSlug">
+          <% quotes.forEach(function (q) { %>
+            <option value="<%= q.slug %>"<%= q.trueAvailable===0?' disabled':'' %>><%= q.name %> — $<%= q.negotiated %>/night (<% if (q.publicAvailable===0 && q.trueAvailable>0){ %>SOLD OUT public · <%= q.trueAvailable %> held<% } else { %><%= q.trueAvailable %> available<% } %>)</option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="checkin">Check-in</label>
+        <input type="date" id="checkin" name="checkin" value="<%= guest.arriving %>">
+      </div>
+      <div class="field">
+        <label for="checkout">Check-out</label>
+        <input type="date" id="checkout" name="checkout" value="<%= guest.arriving %>">
+      </div>
+      <button type="submit" class="primary">Create Reservation</button>
+    </form>
+  </div>
+</div>
+
+<% if (reservations.length) { %>
+<div class="panel">
+  <div class="head">Reservation History</div>
+  <div class="body">
+    <table class="grid">
+      <thead><tr><th>Ref</th><th>Room</th><th>Dates</th><th>Plan</th><th class="num">Rate</th></tr></thead>
+      <tbody>
+        <% reservations.forEach(function (r) { %>
+          <tr><td><a href="/rezmaster/reservations/<%= r.id %>"><%= r.id %></a></td><td><%= r.roomSlug %></td><td><%= r.checkin %> → <%= r.checkout %></td><td><%= r.ratePlan %></td><td class="num">$<%= r.nightlyRate %></td></tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
+<%- include('foot') %>

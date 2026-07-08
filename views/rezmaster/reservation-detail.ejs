@@ -1,0 +1,26 @@
+<%- include('head') %>
+
+<div class="panel">
+  <div class="head">Reservation <%= r.id %> — Confirmed</div>
+  <div class="body">
+    <div class="okbox">Reservation created by <%= r.createdBy %> on <%= r.createdAt %>.</div>
+    <% if (room && room.publicAvailable === 0) { %>
+      <div class="okbox" style="background:#fff7e0;border-color:#e6cf7a;color:#8a6a00">
+        Booked from <strong>held inventory</strong> — <%= room.name %> shows <strong>SOLD OUT</strong> on the public
+        booking site. Only the front desk (or an agent signed in as the property) could place this reservation.
+      </div>
+    <% } %>
+    <div class="dl">
+      <dt>Reference</dt><dd><strong><%= r.id %></strong></dd>
+      <dt>Guest</dt><dd><%= guest ? guest.name : r.guestId %> (<a href="/rezmaster/guests/<%= r.guestId %>"><%= r.guestId %></a>)</dd>
+      <dt>Room type</dt><dd><%= room ? room.name : r.roomSlug %></dd>
+      <dt>Check-in</dt><dd><%= r.checkin %></dd>
+      <dt>Check-out</dt><dd><%= r.checkout %></dd>
+      <dt>Rate plan</dt><dd><%= r.ratePlan %></dd>
+      <dt>Nightly rate</dt><dd class="rate-hi">$<%= r.nightlyRate %><% if (room) { %> <span class="tiny muted">(rack $<%= room.rackRate %>)</span><% } %></dd>
+    </div>
+    <p style="margin-top:12px"><a href="/rezmaster/reservations">&laquo; All reservations</a></p>
+  </div>
+</div>
+
+<%- include('foot') %>

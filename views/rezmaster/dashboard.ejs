@@ -1,0 +1,58 @@
+<%- include('head') %>
+
+<div class="panel">
+  <div class="head">Front Desk Dashboard — <%= TODAY %></div>
+  <div class="body">
+    <div class="dl">
+      <dt>Property</dt><dd>The Marlowe (Property #001)</dd>
+      <dt>Arrivals today</dt><dd><%= arrivalsToday.length %></dd>
+      <dt>Arrivals tomorrow</dt><dd><%= arrivalsTomorrow.length %></dd>
+      <dt>Reservations on book</dt><dd><%= reservations.length %></dd>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="head">Upcoming Arrivals</div>
+  <div class="body">
+    <table class="grid">
+      <thead><tr><th>Guest</th><th>ID</th><th>Tier</th><th>Account</th><th>Arriving</th><th></th></tr></thead>
+      <tbody>
+        <% guests.filter(function(g){return g.arriving >= TODAY;}).sort(function(a,b){return a.arriving<b.arriving?-1:1;}).forEach(function (g) { %>
+          <tr>
+            <td><a href="/rezmaster/guests/<%= g.id %>"><%= g.name %></a></td>
+            <td><%= g.id %></td>
+            <td><span class="pill <%= g.loyaltyTier.toLowerCase() %>"><%= g.loyaltyTier %></span></td>
+            <td><%= g.corporateAccount || '—' %></td>
+            <td><%= g.arriving %></td>
+            <td><a href="/rezmaster/guests/<%= g.id %>">Open</a></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+    <p class="tiny muted" style="margin-top:8px">Open a guest to see negotiated rates and true availability, and to make a booking.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="head">Room Inventory (internal)</div>
+  <div class="body">
+    <table class="grid">
+      <thead><tr><th>Room type</th><th class="num">Rack</th><th class="num">Public avail.</th><th class="num">True avail.</th><th class="num">Held</th></tr></thead>
+      <tbody>
+        <% rooms.forEach(function (r) { %>
+          <tr>
+            <td><%= r.name %></td>
+            <td class="num">$<%= r.rackRate %></td>
+            <td class="num"><%= r.publicAvailable %><% if (r.publicAvailable===0){ %> <span class="tiny" style="color:#a11c1c">(sold out)</span><% } %></td>
+            <td class="num"><%= r.trueAvailable %></td>
+            <td class="num"><% if (r.trueAvailable - r.publicAvailable > 0){ %><span class="pill held"><%= r.trueAvailable - r.publicAvailable %> held</span><% } else { %>—<% } %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+    <p class="tiny muted" style="margin-top:8px">"Held" rooms are kept off the public channel for corporate, group, and loyalty bookings.</p>
+  </div>
+</div>
+
+<%- include('foot') %>

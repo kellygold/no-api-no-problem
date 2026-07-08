@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="icon" href="/static/img/marlowe-icon.png">
+  <link rel="stylesheet" href="/static/<%= layoutSide === 'rezmaster' ? 'rezmaster.css' : 'marlowe.css' %>">
+</head>
+<body>
+  <% if (layoutSide === 'rezmaster') { %>
+    <div class="wrap" style="margin-top:40px">
+      <div class="panel"><div class="head"><%= title %></div><div class="body">
+        <div class="errbox"><%= message %></div>
+        <p><a href="/rezmaster">&laquo; RezMaster dashboard</a></p>
+      </div></div>
+    </div>
+  <% } else { %>
+    <div class="wrap" style="text-align:center; padding-top:80px">
+      <h1 style="font-size:40px; margin-bottom:8px"><%= title %></h1>
+      <p style="color:var(--ink-soft)"><%= message %></p>
+      <p style="margin-top:20px"><a class="btn" href="/">Back to The Marlowe</a></p>
+    </div>
+  <% } %>
+</body>
+</html>

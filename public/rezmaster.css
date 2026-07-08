@@ -1,0 +1,103 @@
+/* RezMaster 4.2 — deliberately dated front-desk PMS, c. 2004. Beveled, glossy, dense. */
+* { box-sizing: border-box; }
+body {
+  font-family: Tahoma, Verdana, Geneva, sans-serif;
+  font-size: 12px; color: #16233a; background: #c9d6e6; margin: 0;
+}
+a { color: #17458c; }
+a:visited { color: #5a3c93; }
+
+.masthead {
+  background: linear-gradient(#3f74c0, #21518f);
+  border-bottom: 3px solid #163a68; color: #fff;
+  padding: 6px 14px; display: flex; align-items: center; justify-content: space-between;
+}
+.masthead .rm-brand { display: flex; align-items: center; gap: 10px; }
+.masthead .rm-brand img { height: 40px; }
+.masthead .rm-brand .tt { font-size: 11px; color: #cfe0f5; }
+.masthead .session { font-size: 11px; color: #d5e4f7; }
+.masthead .session a { color: #fff; }
+
+.navbar { background: linear-gradient(#eef3fa, #cddcee); border-bottom: 1px solid #8ba7c9; padding: 4px 12px; font-size: 11px; }
+.navbar a { display: inline-block; padding: 3px 10px; margin-right: 2px; text-decoration: none; color: #1d3a63; border: 1px solid transparent; }
+.navbar a:hover { border: 1px solid #8ba7c9; background: #fff; }
+
+.wrap { max-width: 960px; margin: 14px auto; padding: 0 14px; }
+
+.panel { background: #fff; border: 1px solid #8ba7c9; margin-bottom: 14px; box-shadow: inset 0 0 0 1px #fff; }
+.panel > .head { background: linear-gradient(#5f8fc6, #3f6ea8); color: #fff; font-weight: bold; padding: 5px 10px; border-bottom: 1px solid #2b527e; text-shadow: 0 1px 0 #21486f; }
+.panel > .body { padding: 12px; }
+
+h1 { font-size: 15px; margin: 0 0 4px; }
+.muted { color: #66788f; }
+.tiny { font-size: 10px; }
+
+table.grid { width: 100%; border-collapse: collapse; font-size: 11px; }
+table.grid th { background: linear-gradient(#e9f0f8, #cfdcec); border: 1px solid #8ba7c9; text-align: left; padding: 4px 7px; color: #1d3a63; }
+table.grid td { border: 1px solid #ccd8e6; padding: 4px 7px; background: #fff; }
+table.grid tr:nth-child(even) td { background: #eef3fa; }
+table.grid tr:hover td { background: #fdf8dd; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.pill { display: inline-block; padding: 1px 7px; border-radius: 8px; font-size: 10px; font-weight: bold; border: 1px solid; }
+.pill.gold { background: #fdf3d6; color: #8a6a00; border-color: #e6cf7a; }
+.pill.platinum { background: #eceff3; color: #4a5566; border-color: #b8c2cf; }
+.pill.silver { background: #f2f4f6; color: #5c6570; border-color: #cbd2da; }
+.pill.none { background: #f6f6f6; color: #888; border-color: #ddd; }
+.pill.held { background: #e3f2e3; color: #1d6b1d; border-color: #9ed19e; }
+
+.field { margin-bottom: 10px; }
+.field label { display: block; font-weight: bold; margin-bottom: 3px; color: #1d3a63; }
+.field input, .field select { width: 260px; padding: 4px 6px; border: 1px solid #7c95b3; font-family: inherit; font-size: 12px; }
+.field input[type="date"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+button, input[type=submit] { font-family: inherit; font-size: 12px; padding: 4px 14px; background: linear-gradient(#f6faff, #d8e5f3); border: 1px solid #7c95b3; border-radius: 3px; cursor: pointer; color: #1a3352; }
+button:hover { background: linear-gradient(#fff, #e6eff8); }
+button.primary { background: linear-gradient(#5d94d2, #35699f); border-color: #2b527e; color: #fff; font-weight: bold; }
+
+.errbox { background: #fbe3e3; border: 1px solid #e29a9a; color: #a11c1c; padding: 7px 10px; margin-bottom: 12px; font-size: 11px; }
+.okbox { background: #e3f4e3; border: 1px solid #9ed19e; color: #1d6b1d; padding: 8px 10px; margin-bottom: 12px; font-size: 12px; }
+
+.dl { margin: 0; overflow: hidden; }
+.dl dt { font-weight: bold; color: #1d3a63; float: left; width: 160px; clear: left; padding: 2px 0; }
+.dl dd { margin: 0 0 0 170px; padding: 2px 0; }
+
+.rate-hi { background: #fff7e0 !important; font-weight: bold; }
+.foot { text-align: center; color: #66788f; font-size: 10px; padding: 12px; border-top: 1px solid #a7bad2; margin-top: 16px; }
+
+/* login screen */
+.login-shell { max-width: 420px; margin: 46px auto; }
+.login-logo { text-align: center; margin-bottom: 14px; }
+.login-logo img { height: 92px; }
+
+/* ---------------------------------------------------------------------------
+   Mobile. RezMaster is meant to feel like dated desktop software, so we DON'T
+   modernize it — we just keep it usable on a phone: wide tables scroll inside
+   their panel (never blow out the page), inputs fit, and the definition lists
+   stack instead of overlapping.
+--------------------------------------------------------------------------- */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+@media (max-width: 760px) {
+  .wrap { max-width: 100%; margin: 10px auto; padding: 0 8px; }
+
+  .masthead { flex-wrap: wrap; gap: 4px; padding: 6px 10px; }
+  .masthead .rm-brand img { height: 30px; }
+  .masthead .rm-brand .tt { display: none; } /* long subtitle would overflow */
+  .masthead .session { font-size: 10px; }
+
+  /* Keep the nav on one line but let it scroll rather than wrap raggedly. */
+  .navbar { white-space: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Wide grids scroll horizontally inside the panel body, not the viewport. */
+  .panel > .body { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table.grid { min-width: 520px; } /* keep columns legible; panel scrolls */
+
+  .field input, .field select { width: 100%; max-width: 100%; font-size: 16px; } /* 16px avoids iOS focus-zoom */
+
+  /* Stack the definition lists instead of the float/margin desktop layout. */
+  .dl dt { float: none; width: auto; padding: 6px 0 0; }
+  .dl dd { margin-left: 0; padding: 0 0 4px; }
+
+  .login-shell { margin: 24px 6px; }
+  .login-logo img { height: 72px; }
+}

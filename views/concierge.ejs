@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= title %></title>
+<link rel="icon" href="/static/img/marlowe-icon.png">
+<link rel="stylesheet" href="/static/marlowe.css">
+<style>
+  body { background: var(--cream); display: flex; flex-direction: column; min-height: 100vh; }
+  .cx-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 28px 16px 40px; }
+  .cx-intro { text-align: center; max-width: 520px; margin-bottom: 20px; }
+  .cx-intro h1 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 40px; font-weight: 600; margin-bottom: 6px; }
+  .cx-intro p { color: var(--ink-soft); font-size: 15px; }
+  .cx-intro a { color: var(--sage-deep); }
+
+  .phone { width: 100%; max-width: 440px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 26px; box-shadow: 0 24px 60px rgba(47,51,48,.16); overflow: hidden; display: flex; flex-direction: column; height: 680px; }
+  .phone-top { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); background: var(--cream); }
+  .phone-top img { height: 40px; width: 40px; border-radius: 10px; }
+  .phone-top .who { line-height: 1.2; }
+  .phone-top .who b { font-family: "Cormorant Garamond", Georgia, serif; font-size: 20px; font-weight: 600; }
+  .phone-top .who span { display: block; font-size: 12px; color: var(--sage-deep); }
+  .phone-top .status { margin-left: auto; font-size: 11px; color: var(--sage-deep); display: flex; align-items: center; gap: 6px; }
+  .phone-top .dot { width: 7px; height: 7px; border-radius: 50%; background: #4b9e5e; }
+
+  .channels { display: flex; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--cream-2); }
+  .channels button { flex: 1; border: 1px solid transparent; background: transparent; border-radius: 8px; padding: 7px 4px;
+    font-family: inherit; font-size: 12px; color: var(--ink-soft); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .channels button .ic { font-size: 15px; }
+  .channels button.active { background: var(--card); border-color: var(--line); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .chan-note { font-size: 11px; color: var(--ink-soft); text-align: center; padding: 6px 12px 0; }
+
+  .thread { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 82%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.45; white-space: pre-wrap; }
+  .msg.bot { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 5px; color: var(--ink); }
+  .msg.me  { align-self: flex-end; background: var(--sage-deep); color: #fff; border-bottom-right-radius: 5px; }
+  .steps { align-self: flex-start; max-width: 90%; display: flex; flex-wrap: wrap; gap: 5px; margin-top: -4px; }
+  .step { font-size: 11px; color: var(--sage-deep); background: var(--cream-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
+  .step::before { content: "⚙ "; opacity: .7; }
+  .typing { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-radius: 16px; border-bottom-left-radius: 5px; padding: 12px 16px; display: flex; gap: 4px; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--sage); display: inline-block; animation: bob 1s infinite; }
+  .typing i:nth-child(2){ animation-delay:.15s } .typing i:nth-child(3){ animation-delay:.3s }
+  @keyframes bob { 0%,60%,100%{ transform: translateY(0); opacity:.5 } 30%{ transform: translateY(-4px); opacity:1 } }
+
+  .suggests { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 8px; }
+  .suggests button { font-size: 12px; color: var(--ink); background: var(--cream-2); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-family: inherit; }
+  .suggests button:hover { background: #fff; }
+
+  .composer { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); background: var(--cream); }
+  .composer input { flex: 1; border: 1px solid var(--line); border-radius: 999px; padding: 11px 16px; font-size: 15px; font-family: inherit; background: #fff; color: var(--ink); }
+  .composer input:focus { outline: none; border-color: var(--sage); box-shadow: 0 0 0 3px rgba(138,154,134,.2); }
+  .composer button { border: none; background: var(--sage-deep); color: #fff; border-radius: 999px; width: 44px; font-size: 18px; cursor: pointer; }
+  .composer button:disabled { opacity: .5; cursor: default; }
+  .offline { text-align:center; color:#a8443a; font-size:12px; padding:8px; }
+</style>
+</head>
+<body>
+  <div class="cx-wrap">
+    <div class="cx-intro">
+      <h1>Concierge</h1>
+      <p>Chat with The Marlowe. One agent — the same one that answers the phone, SMS, and WhatsApp — booking through the tools we built. <a href="/">Back to the site</a></p>
+    </div>
+
+    <div class="phone">
+      <div class="phone-top">
+        <img src="/static/img/marlowe-icon.png" alt="">
+        <div class="who"><b>The Marlowe</b><span>Concierge</span></div>
+        <div class="status"><span class="dot"></span> online</div>
+      </div>
+
+      <div class="channels" id="channels">
+        <button class="active" data-ch="Chat"><span class="ic">💬</span>Chat</button>
+        <button data-ch="SMS"><span class="ic">📱</span>SMS</button>
+        <button data-ch="WhatsApp"><span class="ic">🟢</span>WhatsApp</button>
+        <button data-ch="Phone"><span class="ic">📞</span>Phone</button>
+      </div>
+      <div class="chan-note" id="chanNote">One concierge, every channel. Chat is live in this demo.</div>
+
+      <div class="thread" id="thread"></div>
+
+      <div class="suggests" id="suggests">
+        <button>I need a room for tomorrow night.</button>
+        <button>Do you have a Loft King open tomorrow?</button>
+      </div>
+
+      <% if (!agentReady) { %>
+        <div class="offline">Concierge offline — no model key configured on this instance.</div>
+      <% } %>
+
+      <form class="composer" id="composer" autocomplete="off">
+        <input id="input" placeholder="Message the concierge…" <%= agentReady ? '' : 'disabled' %>>
+        <button type="submit" id="send" <%= agentReady ? '' : 'disabled' %>>➤</button>
+      </form>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var thread = document.getElementById('thread');
+  var form = document.getElementById('composer');
+  var input = document.getElementById('input');
+  var send = document.getElementById('send');
+  var suggests = document.getElementById('suggests');
+  var GREETING = "Welcome to The Marlowe — I'm the concierge. Looking to book a room? Tell me your dates — and if you have an account with us, I can look it up by phone for your rate.";
+  var messages = [{ role: 'assistant', content: GREETING }];
+  var busy = false;
+
+  function bubble(role, text){
+    var d = document.createElement('div');
+    d.className = 'msg ' + (role === 'user' ? 'me' : 'bot');
+    d.textContent = text;
+    thread.appendChild(d);
+    thread.scrollTop = thread.scrollHeight;
+    return d;
+  }
+  function stepChips(steps){
+    if(!steps || !steps.length) return;
+    var wrap = document.createElement('div'); wrap.className = 'steps';
+    steps.forEach(function(s){ var c = document.createElement('span'); c.className = 'step'; c.textContent = s.label; wrap.appendChild(c); });
+    thread.appendChild(wrap); thread.scrollTop = thread.scrollHeight;
+  }
+  bubble('assistant', GREETING);
+
+  function setBusy(b){ busy = b; send.disabled = b; input.disabled = b; }
+  function showTyping(){ var t = document.createElement('div'); t.className='typing'; t.id='typing'; t.innerHTML='<i></i><i></i><i></i>'; thread.appendChild(t); thread.scrollTop = thread.scrollHeight; }
+  function hideTyping(){ var t = document.getElementById('typing'); if(t) t.remove(); }
+
+  async function sendMessage(text){
+    if(busy || !text) return;
+    suggests.style.display = 'none';
+    bubble('user', text);
+    messages.push({ role:'user', content:text });
+    setBusy(true); showTyping();
+    try {
+      var r = await fetch('/concierge/agent', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ messages: messages }) });
+      var data = await r.json();
+      hideTyping();
+      stepChips(data.steps);
+      bubble('assistant', data.reply);
+      messages.push({ role:'assistant', content: data.reply });
+    } catch(e){
+      hideTyping();
+      bubble('assistant', "Sorry — I couldn't reach the booking system just now.");
+    } finally { setBusy(false); input.focus(); }
+  }
+
+  form.addEventListener('submit', function(e){ e.preventDefault(); var v = input.value.trim(); input.value=''; sendMessage(v); });
+  suggests.addEventListener('click', function(e){ if(e.target.tagName==='BUTTON'){ sendMessage(e.target.textContent.trim()); } });
+
+  // Channel tabs (visual — sells the omnichannel story)
+  var channels = document.getElementById('channels');
+  var note = document.getElementById('chanNote');
+  channels.addEventListener('click', function(e){
+    var btn = e.target.closest('button'); if(!btn) return;
+    [].forEach.call(channels.children, function(b){ b.classList.toggle('active', b===btn); });
+    var ch = btn.getAttribute('data-ch');
+    note.textContent = ch === 'Chat' ? 'One concierge, every channel. Chat is live in this demo.'
+      : 'Same concierge, delivered over ' + ch + '. (Chat is the live channel in this demo.)';
+  });
+})();
+</script>
+</body>
+</html>

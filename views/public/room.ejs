@@ -1,0 +1,28 @@
+<%- include('head') %>
+
+<div class="wrap">
+  <p class="crumb"><a href="/">Home</a> › <a href="/#rooms">Rooms</a> › <%= room.name %></p>
+  <div class="detail">
+    <div>
+      <img src="/static/img/<%= room.photo %>" alt="<%= room.name %>">
+    </div>
+    <div>
+      <h1><%= room.name %></h1>
+      <p style="color:var(--ink-soft)"><%= room.blurb %></p>
+      <p class="price">$<%= room.rackRate %> <small style="font-size:14px;color:var(--ink-soft)">/ night · sleeps <%= room.sleeps %></small><% if (room.publicAvailable === 0) { %> <span class="sold-badge">Sold out</span><% } %></p>
+      <h3 style="margin:18px 0 6px">Amenities</h3>
+      <div>
+        <% room.amenities.forEach(function (a) { %><span class="pill-tag"><%= a %></span><% }); %>
+      </div>
+      <div style="margin-top:22px">
+        <a class="btn brass" href="/search">Check availability</a>
+      </div>
+      <p class="note">
+        Rate shown is our public nightly rate. Corporate, AAA, and loyalty members receive
+        negotiated rates — these are managed at the front desk and are not shown here.
+      </p>
+    </div>
+  </div>
+</div>
+
+<%- include('foot') %>

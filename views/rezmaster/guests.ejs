@@ -1,0 +1,24 @@
+<%- include('head') %>
+
+<div class="panel">
+  <div class="head">Guest Book</div>
+  <div class="body">
+    <table class="grid">
+      <thead><tr><th>ID</th><th>Name</th><th>Tier</th><th>Account</th><th class="num">Neg.</th><th>Arriving</th></tr></thead>
+      <tbody>
+        <% guests.forEach(function (g) { %>
+          <tr>
+            <td><%= g.id %></td>
+            <td><a href="/rezmaster/guests/<%= g.id %>"><%= g.name %></a></td>
+            <td><span class="pill <%= g.loyaltyTier.toLowerCase() %>"><%= g.loyaltyTier %></span></td>
+            <td><%= g.corporateAccount || '—' %></td>
+            <td class="num"><%= (g.negotiatedPct * 100).toFixed(0) %>%</td>
+            <td><%= g.arriving %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('foot') %>

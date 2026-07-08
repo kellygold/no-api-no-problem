@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "marlowe": {
+      "command": "node",
+      "args": ["tools/mcp-server.mjs"],
+      "env": {
+        "MARLOWE_URL": "https://marlowe-demo-15002197811.us-central1.run.app"
+      }
+    }
+  }
+}

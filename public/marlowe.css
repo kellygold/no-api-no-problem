@@ -1,0 +1,176 @@
+/* The Marlowe — public booking site. Modern boutique: cream/sage/charcoal/brass. */
+:root {
+  --cream: #f6f1e7;
+  --cream-2: #efe7d8;
+  --ink: #2f3330;
+  --ink-soft: #5b615c;
+  --sage: #8a9a86;
+  --sage-deep: #5f6f5b;
+  --brass: #b08d57;
+  --line: #e0d8c8;
+  --card: #fffdf8;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  line-height: 1.55;
+}
+h1, h2, h3, .serif { font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif; }
+a { color: var(--sage-deep); }
+
+/* top nav */
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px; border-bottom: 1px solid var(--line);
+  background: rgba(246,241,231,0.9); backdrop-filter: blur(6px);
+  position: sticky; top: 0; z-index: 20;
+}
+.nav .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--ink); }
+.nav .brand img { height: 40px; width: 40px; border-radius: 8px; object-fit: cover; }
+.nav .brand .wordmark { font-family: "Cormorant Garamond", Georgia, serif; font-size: 24px; letter-spacing: 0.06em; font-weight: 600; }
+.nav .links a { margin-left: 22px; text-decoration: none; color: var(--ink-soft); font-size: 14px; letter-spacing: 0.03em; }
+.nav .links a:hover { color: var(--ink); }
+.nav .links a.staff { color: var(--brass); }
+
+/* hero */
+.hero { position: relative; height: 460px; overflow: hidden; }
+.hero img { width: 100%; height: 100%; object-fit: cover; }
+.hero .scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(28,30,28,0.15), rgba(28,30,28,0.55)); }
+.hero .hero-copy { position: absolute; left: 0; right: 0; bottom: 48px; text-align: center; color: #fff; padding: 0 20px; }
+.hero .hero-copy .eyebrow { letter-spacing: 0.28em; text-transform: uppercase; font-size: 12px; opacity: 0.85; }
+.hero .hero-copy h1 { font-size: 54px; margin: 8px 0 6px; font-weight: 600; }
+.hero .hero-copy p { font-size: 18px; opacity: 0.92; margin: 0; }
+
+/* search bar */
+.searchbar {
+  max-width: 820px; margin: -36px auto 0; position: relative; z-index: 5;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(47,51,48,0.12);
+  display: flex; gap: 16px; align-items: end; padding: 20px 24px;
+}
+.searchbar .field { flex: 1; }
+.searchbar label { display: block; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+.searchbar input {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px;
+  font-size: 16px; /* 16px stops iOS Safari from zooming in on focus */
+  line-height: 1.2; min-height: 48px; font-family: inherit; background: #fff; color: var(--ink);
+}
+.searchbar input:focus { outline: none; border-color: var(--sage); box-shadow: 0 0 0 3px rgba(138,154,134,0.2); }
+/* iOS Safari centers + oversizes the date value by default — left-align it so
+   the date fields match the "Guests" field and read like normal inputs. */
+.searchbar input[type="date"] { text-align: left; }
+.searchbar input[type="date"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.searchbar input[type="date"]::-webkit-datetime-edit { padding: 0; line-height: 1.2; }
+.searchbar input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.55; }
+.btn {
+  display: inline-block; border: none; cursor: pointer; text-decoration: none;
+  background: var(--sage-deep); color: #fff; padding: 12px 26px; border-radius: 8px;
+  font-size: 15px; letter-spacing: 0.02em; font-family: inherit;
+}
+.btn:hover { background: #52614f; }
+.btn.brass { background: var(--brass); }
+.btn.brass:hover { background: #9c7b47; }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: 48px 24px 64px; }
+.section-title { text-align: center; margin-bottom: 6px; font-size: 34px; font-weight: 600; }
+.section-sub { text-align: center; color: var(--ink-soft); margin: 0 0 32px; }
+
+/* room cards */
+.rooms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+@media (max-width: 880px) { .rooms { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .rooms { grid-template-columns: 1fr; } .hero .hero-copy h1 { font-size: 40px; } .searchbar { flex-wrap: wrap; } }
+.room-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+.room-card img { width: 100%; height: 190px; object-fit: cover; }
+.room-card .body { padding: 18px 20px 20px; display: flex; flex-direction: column; flex: 1; }
+.room-card h3 { margin: 0 0 4px; font-size: 24px; font-weight: 600; }
+.room-card .blurb { color: var(--ink-soft); font-size: 14px; margin: 0 0 14px; flex: 1; }
+.room-card .rate { display: flex; align-items: baseline; justify-content: space-between; margin-top: auto; }
+.room-card .rate .price { font-family: "Cormorant Garamond", Georgia, serif; font-size: 26px; font-weight: 600; }
+.room-card .rate .price small { font-size: 13px; color: var(--ink-soft); font-family: inherit; }
+.room-card .rate .avail { font-size: 12px; color: var(--sage-deep); }
+.room-card .rate .avail.sold { color: #a8443a; font-weight: 700; }
+.loading { text-align: center; color: var(--ink-soft); grid-column: 1/-1; padding: 40px; }
+
+/* Sold-out treatment — make it unmistakable: corner badge, dimmed photo, muted CTA. */
+.room-card .card-img { position: relative; overflow: hidden; }
+.room-card.is-sold-out .card-img img { filter: grayscale(0.6) brightness(0.88); }
+.room-card .ribbon {
+  position: absolute; top: 12px; left: 12px; z-index: 2;
+  background: #a8443a; color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 11px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.28);
+}
+.btn.btn-muted { background: #a9a294; }
+.btn.btn-muted:hover { background: #988f7e; }
+.detail .sold-badge {
+  display: inline-block; margin-left: 10px; vertical-align: middle;
+  background: #a8443a; color: #fff; font-family: "Inter", sans-serif;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 11px; border-radius: 6px;
+}
+
+/* room detail */
+.detail { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 36px; }
+@media (max-width: 780px) { .detail { grid-template-columns: 1fr; } }
+.detail img { width: 100%; border-radius: 14px; }
+.detail h1 { font-size: 44px; margin: 0 0 8px; font-weight: 600; }
+.detail .price { font-family: "Cormorant Garamond", Georgia, serif; font-size: 30px; }
+.detail ul { padding-left: 18px; color: var(--ink-soft); }
+.detail .note { margin-top: 24px; font-size: 13px; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 16px; }
+.crumb { color: var(--ink-soft); font-size: 13px; margin-bottom: 18px; }
+
+.foot { border-top: 1px solid var(--line); text-align: center; color: var(--ink-soft); font-size: 13px; padding: 28px; }
+.pill-tag { display:inline-block; background: var(--cream-2); border:1px solid var(--line); border-radius: 999px; padding: 3px 12px; font-size: 12px; color: var(--ink-soft); margin: 2px; }
+
+/* ---------------------------------------------------------------------------
+   Mobile. The public site is the polished, customer-facing surface, so it gets
+   real responsive treatment (stacked search, tuned type, no horizontal scroll).
+--------------------------------------------------------------------------- */
+/* Note: no `overflow-x: hidden` on html/body here — it would break the sticky
+   nav. Overflow is prevented at the element level instead. */
+img { max-width: 100%; }
+
+@media (max-width: 760px) {
+  .nav { padding: 12px 16px; }
+  .nav .brand img { height: 34px; width: 34px; }
+  .nav .brand .wordmark { font-size: 20px; letter-spacing: 0.04em; }
+  .nav .links a { margin-left: 14px; font-size: 13px; }
+
+  .hero { height: 340px; }
+  .hero .hero-copy { bottom: 36px; }
+  .hero .hero-copy h1 { font-size: 38px; }
+  .hero .hero-copy p { font-size: 15px; }
+
+  /* Search collapses to a single stacked column with a full-width action. */
+  .searchbar {
+    flex-direction: column; align-items: stretch; gap: 12px;
+    margin: -26px 16px 0; padding: 18px;
+  }
+  .searchbar .field { flex: none; width: 100%; max-width: none !important; min-width: 0; }
+  /* iOS Safari date inputs have an intrinsic min-width that ignores width:100%
+     and overflows the card — strip the native appearance so they shrink to fit
+     (tapping still opens the iOS date picker). */
+  .searchbar input { min-width: 0; max-width: 100%; }
+  .searchbar input[type="date"] { -webkit-appearance: none; appearance: none; }
+  .searchbar .btn { width: 100%; text-align: center; padding: 13px 0; }
+
+  .wrap { padding: 36px 18px 48px; }
+  .section-title { font-size: 28px; }
+  .section-sub { font-size: 14px; }
+
+  .detail { gap: 24px; }
+  .detail h1 { font-size: 34px; }
+  .detail .price { font-size: 26px; }
+}
+
+@media (max-width: 430px) {
+  .nav .brand .wordmark { font-size: 18px; }
+  .nav .links a { margin-left: 11px; font-size: 12px; }
+  .hero { height: 300px; }
+  .hero .hero-copy h1 { font-size: 31px; }
+  .rooms { gap: 16px; }
+  .room-card img { height: 170px; }
+}

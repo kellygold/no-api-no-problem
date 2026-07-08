@@ -1,0 +1,29 @@
+<%- include('head') %>
+
+<div class="login-shell">
+  <div class="login-logo"><img src="/static/img/rezmaster-logo.png" alt="RezMaster 4.2"></div>
+  <div class="panel">
+    <div class="head">Front Desk Sign In</div>
+    <div class="body">
+      <% if (error) { %><div class="errbox"><%= error %></div><% } %>
+      <form method="post" action="/rezmaster/login">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <input type="hidden" name="next" value="<%= next %>">
+        <div class="field">
+          <label for="email">Username (email)</label>
+          <input type="text" id="email" name="email" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="primary">Sign In</button>
+      </form>
+      <p class="tiny muted" style="margin-top:14px">
+        Demo login: <code>frontdesk@themarlowe.test</code> / <code>reception24</code>
+      </p>
+    </div>
+  </div>
+</div>
+
+<%- include('foot') %>

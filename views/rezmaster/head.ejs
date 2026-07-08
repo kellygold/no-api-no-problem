@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="icon" href="/static/img/marlowe-icon.png">
+  <link rel="stylesheet" href="/static/rezmaster.css">
+</head>
+<body>
+  <div class="masthead">
+    <div class="rm-brand">
+      <img src="/static/img/rezmaster-logo.png" alt="RezMaster 4.2">
+      <span class="tt">Lodging Management System · The Marlowe (Property #001)</span>
+    </div>
+    <div class="session">
+      <% if (staff) { %>
+        <%= staff.name %> (<%= staff.role %>) ·
+        <form method="post" action="/rezmaster/logout" style="display:inline">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <a href="#" onclick="this.closest('form').submit();return false;">Sign out</a>
+        </form>
+      <% } else { %>
+        Not signed in
+      <% } %>
+    </div>
+  </div>
+  <% if (staff) { %>
+  <div class="navbar">
+    <a href="/rezmaster">Dashboard</a>
+    <a href="/rezmaster/guests">Guest Book</a>
+    <a href="/rezmaster/reservations">Reservations</a>
+    <a href="#">Housekeeping</a>
+    <a href="#">Night Audit</a>
+    <a href="#">Reports</a>
+  </div>
+  <% } %>
+  <div class="wrap">

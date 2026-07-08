@@ -1,0 +1,25 @@
+<%- include('head') %>
+
+<div class="panel">
+  <div class="head">Reservations on Book</div>
+  <div class="body">
+    <table class="grid">
+      <thead><tr><th>Ref</th><th>Guest</th><th>Room</th><th>Dates</th><th>Rate plan</th><th class="num">Nightly</th><th>By</th></tr></thead>
+      <tbody>
+        <% reservations.slice().reverse().forEach(function (r) { var g = guestById(r.guestId); var rm = roomBySlug(r.roomSlug); %>
+          <tr>
+            <td><a href="/rezmaster/reservations/<%= r.id %>"><%= r.id %></a></td>
+            <td><%= g ? g.name : r.guestId %></td>
+            <td><%= rm ? rm.name : r.roomSlug %></td>
+            <td><%= r.checkin %> → <%= r.checkout %></td>
+            <td><%= r.ratePlan %></td>
+            <td class="num">$<%= r.nightlyRate %></td>
+            <td><%= r.createdBy %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('foot') %>

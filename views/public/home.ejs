@@ -1,0 +1,75 @@
+<%- include('head') %>
+
+<div class="hero">
+  <img src="/static/img/marlowe-hero.png" alt="The Marlowe">
+  <div class="scrim"></div>
+  <div class="hero-copy">
+    <div class="eyebrow">A boutique hotel</div>
+    <h1>The Marlowe</h1>
+    <p>Twenty-two rooms on a quiet garden lane.</p>
+  </div>
+</div>
+
+<form class="searchbar" action="/search" method="get">
+  <div class="field">
+    <label>Check-in</label>
+    <input type="date" name="checkin" value="<%= checkin %>">
+  </div>
+  <div class="field">
+    <label>Check-out</label>
+    <input type="date" name="checkout" value="<%= checkout %>">
+  </div>
+  <div class="field" style="max-width:120px">
+    <label>Guests</label>
+    <input type="number" name="guests" value="2" min="1" max="4">
+  </div>
+  <button class="btn" type="submit">Search rooms</button>
+</form>
+
+<div class="wrap" id="rooms">
+  <h2 class="section-title">Our Rooms</h2>
+  <p class="section-sub">Available for <%= checkin %> → <%= checkout %></p>
+  <div class="rooms" id="room-grid">
+    <div class="loading">Loading availability…</div>
+  </div>
+</div>
+
+<script>
+  // Public booking widget loads live availability from the internal feed.
+  // (This is the XHR you'll spot in DevTools → Network.)
+  (function () {
+    var qs = '?checkin=<%= checkin %>&checkout=<%= checkout %>';
+    fetch('/api/availability' + qs, { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var grid = document.getElementById('room-grid');
+        grid.innerHTML = '';
+        data.rooms.forEach(function (room) {
+          var avail = room.soldOut
+            ? '<span class="avail sold">Sold out</span>'
+            : '<span class="avail">' + room.available + ' left</span>';
+          var ribbon = room.soldOut ? '<span class="ribbon">Sold out</span>' : '';
+          var btnCls = room.soldOut ? 'btn btn-muted' : 'btn';
+          var card = document.createElement('div');
+          card.className = 'room-card' + (room.soldOut ? ' is-sold-out' : '');
+          card.innerHTML =
+            '<div class="card-img">' + ribbon + '<img src="' + room.photo + '" alt="' + room.name + '"></div>' +
+            '<div class="body">' +
+              '<h3>' + room.name + '</h3>' +
+              '<p class="blurb">Sleeps ' + room.sleeps + '</p>' +
+              '<div class="rate">' +
+                '<span class="price">$' + room.rackRate + ' <small>/ night</small></span>' +
+                avail +
+              '</div>' +
+              '<div style="margin-top:14px"><a class="' + btnCls + '" href="/rooms/' + room.slug + '">View room</a></div>' +
+            '</div>';
+          grid.appendChild(card);
+        });
+      })
+      .catch(function () {
+        document.getElementById('room-grid').innerHTML = '<div class="loading">Could not load availability.</div>';
+      });
+  })();
+</script>
+
+<%- include('foot') %>
