@@ -56,7 +56,8 @@ section('WALL 3 — front-desk login, session, CSRF');
   const j = jar();
   check('gated PMS page → 302 to login when logged out', (await j.fetch('/rezmaster/guests/G-1007')).status === 302);
   const anonCid = await (await fetch(`${BASE}/api/availability?contactId=G-1007`)).json();
-  check('contactId is ignored without a session (availability stays public)', anonCid.contact === null && anonCid.rooms.every((r) => r.rate === r.rackRate));
+  check('contactId is ignored without a session (public + authenticated:false signal)',
+    anonCid.contact === null && anonCid.authenticated === false && anonCid.rooms.every((r) => r.rate === r.rackRate));
 
   const preCsrf = csrfOf(await (await j.fetch('/rezmaster/login')).text());
   check('login sets rm_session cookie', j.c.has('rm_session'));

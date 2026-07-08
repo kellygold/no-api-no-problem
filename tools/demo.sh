@@ -20,8 +20,8 @@ node get-room.mjs loft-king
 
 
 # ── WALL 2 · PRICE (log in — the numbers that aren't public) ─────
-# ask for the client list with no session → bounced to the login PAGE (HTML, not JSON):
-curl -sL "$M/rezmaster/api/guests"
+# try to open the target's Guest Book with no session → bounced to the login page:
+curl -sL "$M/rezmaster/guests"
 
 # naive: POST the creds → Forbidden, it wants a CSRF token:
 curl -s -X POST "$M/rezmaster/login" -d email=frontdesk@themarlowe.test -d password=reception24 | grep -iE 'Forbidden|CSRF'
@@ -33,17 +33,22 @@ curl -si -c /tmp/jar "$M/rezmaster/login" | grep -iE 'set-cookie:|name="_csrf"'
 # NOW log in: paste the token, sent with the saved cookie (-b) → 302, we're in:
 curl -si -b /tmp/jar -c /tmp/jar -X POST "$M/rezmaster/login" -d _csrf=PASTE_TOKEN_HERE -d email=frontdesk@themarlowe.test -d password=reception24 -d next=/rezmaster | grep -iE 'HTTP/|^location:|set-cookie:'
 
-# reuse the session → the client directory (hydrated: name, email, phone, rate plan):
-curl -s -b /tmp/jar "$M/rezmaster/api/guests" | jq '.guests'
+# reuse the session → the target's Guest Book. all the guests, but it's an HTML table (no JSON):
+curl -s -b /tmp/jar "$M/rezmaster/guests" | grep -A2 '<td>'
+
+# ...so WE wrap that page into our OWN clean endpoint (/api/contacts — our namespace, not the target's):
+curl -s -b /tmp/jar "$M/api/contacts" | jq '.contacts'
 
 # THE SAME availability endpoint from Wall 1 — now add a contactId (+ our session).
-# public: Loft King sold out at rack. with contactId=G-1007: Jordan's rate AND the held room appears:
+# public: Loft King sold out at rack:
 curl -s "$M/api/availability?checkin=2026-07-07&checkout=2026-07-09" | jq '.rooms[]|select(.slug=="loft-king")'
-curl -s -b /tmp/jar "$M/api/availability?checkin=2026-07-07&checkout=2026-07-09&contactId=G-1007" | jq '.contact,(.rooms[]|select(.slug=="loft-king"))'
+# with contactId=G-1007 (logged in): Jordan's rate AND the held room appear.
+# NB: if "authenticated" is false, the login above didn't take — redo the token paste:
+curl -s -b /tmp/jar "$M/api/availability?checkin=2026-07-07&checkout=2026-07-09&contactId=G-1007" | jq '{authenticated, contact, loftKing:(.rooms[]|select(.slug=="loft-king"))}'
 
-# same call, every room, for one client — preferred vs standard:
-./avail-auth.sh G-1007    # Jordan / Corporate → your rate is BELOW rack
-./avail-auth.sh G-1050    # Chris  / Standard  → your rate EQUALS rack
+# same call, every room, for one client — member vs standard:
+./avail-auth.sh G-1007    # Jordan / Corporate → member rate + held rooms unlocked
+./avail-auth.sh G-1050    # Chris  / Standard  → rack rate + public inventory (Loft King sold out)
 
 
 # ── ASSOCIATION · client → their availability (our unified API) ──
@@ -51,7 +56,9 @@ node availability.mjs 2026-07-07 2026-07-09                 # public: rack rates
 node availability.mjs 2026-07-07 2026-07-09 415-555-1111    # member: member rates + held rooms
 
 
-# ── FINALE · the agent uses the tools (browser) ─────────────────
+# ── FINALE · the concierge (2FA → member rates → card-on-file booking) ──
 open "$M/concierge"
-#   stranger 415-555-1112 → rack / sold-out
-#   member   415-555-1111 → $286 vs $349 → "book it" → confirmation
+# Say your dates, then give a phone number to look up the account.   Verification code: 12345
+#   415-555-1111   member (Jordan · Acme Corp)  → asks for code → 12345 → $286 vs $349 + Amex on file → book
+#   415-555-2222   standard (Chris)             → verifies, but rack rates + Loft King sold out (no perks)
+#   415-555-1112   not on file (a stranger)     → straight to public rack rates, no account, no code

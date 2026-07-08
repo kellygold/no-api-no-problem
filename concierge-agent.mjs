@@ -15,6 +15,10 @@ const STAFF = {
   email: process.env.MARLOWE_USER || 'frontdesk@themarlowe.test',
   password: process.env.MARLOWE_PASS || 'reception24',
 };
+// A returning guest confirms their identity with a one-time code before we open their
+// account — member rates, held rooms, and the card on file (so they never re-enter payment).
+// Static for the demo; in production this is caller ID / a real OTP.
+const VERIFY_CODE = (process.env.MARLOWE_VERIFY_CODE || '12345').replace(/\D/g, '');
 // Guest identity. Over the phone the concierge already knows the caller's number
 // (caller ID from Twilio) and looks up the account from it. A chat has no caller
 // ID, so we simply ask for the number and look it up the same way: the phone
@@ -71,10 +75,10 @@ class ConciergeOps {
   // (with our session) and match the caller's number in our own layer.
   async identifyByPhone(phone) {
     await this._login();
-    const r = await this._fetch('/rezmaster/api/guests', { headers: { Accept: 'application/json' } });
-    const { guests } = await r.json();
+    const r = await this._fetch('/api/contacts', { headers: { Accept: 'application/json' } });
+    const { contacts } = await r.json();
     const want = String(phone || '').replace(/\D/g, '').slice(-10);
-    const g = want.length >= 7 ? guests.find((x) => String(x.phone || '').replace(/\D/g, '').slice(-10) === want) : null;
+    const g = want.length >= 7 ? contacts.find((x) => String(x.phone || '').replace(/\D/g, '').slice(-10) === want) : null;
     if (!g) return { matched: false };
     return {
       matched: true,
@@ -87,6 +91,15 @@ class ConciergeOps {
         phoneLast4: String(g.phone).replace(/\D/g, '').slice(-4),
       },
     };
+  }
+  // Confirm the caller controls the number: they read back the code we "sent". Only a
+  // pass unlocks the account — and reveals the card on file, so no payment re-entry.
+  async verifyIdentity(contactId, code) {
+    if (String(code || '').replace(/\D/g, '') !== VERIFY_CODE) return { verified: false };
+    await this._login();
+    const r = await this._fetch('/api/contacts', { headers: { Accept: 'application/json' } });
+    const c = (await r.json()).contacts.find((x) => x.id === contactId);
+    return { verified: true, cardOnFile: c?.cardOnFile || null };
   }
   async createReservation({ guestId, roomSlug, checkin, checkout }) {
     await this._login();
@@ -117,13 +130,25 @@ const TOOLS = [
   },
   {
     name: 'identify_caller',
-    description: "Look up a guest account by phone number — the way the phone concierge resolves a caller from their caller ID. Call this once the guest gives you a number. Returns { matched, guest } with the guest's id (use it as the contactId), name, tier and corporate account if the number is on file, or { matched: false } if it isn't (treat as a public/new guest).",
+    description: "Look up a guest account by phone number. Call this once the guest gives you a number. Returns { matched, guest } with the guest's id (use it as the contactId), name, tier and corporate account if the number is on file, or { matched: false } if it isn't (treat as a public/new guest). NOTE: matching only tells you who they CLAIM to be — you must verify_identity before revealing their rate, availability, or booking.",
     input_schema: {
       type: 'object',
       properties: {
         phone: { type: 'string', description: 'The phone number the guest provided, any format' },
       },
       required: ['phone'],
+    },
+  },
+  {
+    name: 'verify_identity',
+    description: "Confirm the caller controls the number on file, before you reveal any member rate, availability, or book for them. After identify_caller matches, tell the guest a code was sent to their number and ask them to read it back, then pass it here. Returns { verified, cardOnFile }. On verified:true you may proceed and may reference their card on file so they don't re-enter payment. (In production this is caller ID / a one-time passcode; here it's a fixed demo code.)",
+    input_schema: {
+      type: 'object',
+      properties: {
+        contactId: { type: 'string', description: 'the matched guest id from identify_caller' },
+        code: { type: 'string', description: 'the code the guest read back' },
+      },
+      required: ['contactId', 'code'],
     },
   },
   {
@@ -147,19 +172,18 @@ const SYSTEM = `You are the concierge for The Marlowe, a boutique hotel. You are
 Your job: help the guest find and book a room at the best rate they're entitled to.
 - Be warm, brief, and natural. This is a chat — keep replies to a few sentences.
 
-AVAILABILITY IS ONE TOOL — get_availability:
-- Call it with NO contactId for anyone just browsing → public rack rates + public availability (some rooms may show sold out).
-- Call it WITH a contactId → that contact's negotiated rate + their true availability (rooms held off the public channel that the public site shows as sold out). Only pass a contactId once you've matched the caller.
+Follow this sequence for a returning/member guest. Do the steps IN ORDER — never skip the verification.
 
-FIND THE CALLER FIRST (before pricing them as a member):
-- We do NOT identify members by name. Over the phone we'd have caller ID; here, just ask for the number naturally — e.g. "To look up your account, can I grab the phone number on file?"
-- Call identify_caller with whatever number they give. If it matches, you get their guest id — use it as the contactId. If it does NOT match, they're a public/new guest — call get_availability with no contactId and never reveal member pricing.
+1. FIND THEM. We don't identify members by name — ask for the phone number naturally ("To look up your account, can I grab the number on file?") and call identify_caller. If it does NOT match, they're a public/new guest: use get_availability with NO contactId, quote rack rates, and skip verification entirely.
 
-QUOTING & BOOKING:
-- With a matched contact, call get_availability with their contactId, then show the member rate next to the rack rate so the savings are clear (e.g. "$286 vs $349 public"), and note if a publicly sold-out room is available to them.
-- Confirm the room and dates, then create_reservation (pass the matched contactId as guestId). After booking, give the confirmation number and the nightly rate.
+2. VERIFY THEM (required before ANY member data). If identify_caller matches, do NOT quote their rate or availability yet. First say a one-time code was just sent to the number on file and ask them to read it back — e.g. "To confirm it's you, please enter the code we just sent to your number." Then call verify_identity(contactId, code). Only if it returns verified:true may you continue. If it fails, apologize and offer public rack rates only.
 
-- Today is 2026-07-06. If the guest says "tomorrow", that's 2026-07-07. Default a stay to 2 nights unless told otherwise.`;
+3. QUOTE (only once verified). Call get_availability with their contactId. Show the member rate next to the public rack rate so the savings are clear (e.g. "$286 vs $349 public") and note any publicly sold-out room that's available to them. Mention their card on file (from verify_identity) so they know payment is already set — nothing to enter.
+
+4. BOOK. Confirm the room and dates, then create_reservation (pass the contactId as guestId). Give the confirmation number and nightly rate; since the card is on file, no payment step is needed.
+
+Style: warm, brief, natural — a few sentences per reply. Use short markdown lists when showing multiple rooms.
+Today is 2026-07-06. "Tomorrow" is 2026-07-07. Default a stay to 2 nights unless told otherwise.`;
 
 // Friendly label for a tool call, for the UI's step chips.
 function stepLabel(name, input, result) {
@@ -170,6 +194,10 @@ function stepLabel(name, input, result) {
   if (name === 'identify_caller') {
     const r = result || {};
     return r.matched ? `Matched account: ${r.guest?.name} (${r.guest?.ratePlan})` : 'No account on that number';
+  }
+  if (name === 'verify_identity') {
+    const r = result || {};
+    return r.verified ? `Identity verified ✓${r.cardOnFile ? ' · ' + r.cardOnFile : ''}` : 'Verification failed';
   }
   if (name === 'create_reservation') return `Booked ${result?.reservationId || 'the room'}`;
   return name;
@@ -204,6 +232,7 @@ export async function runConcierge(messages, { base }) {
       try {
         if (block.name === 'get_availability') out = await ops.getAvailability(block.input.checkin, block.input.checkout, block.input.contactId);
         else if (block.name === 'identify_caller') out = await ops.identifyByPhone(block.input.phone);
+        else if (block.name === 'verify_identity') out = await ops.verifyIdentity(block.input.contactId, block.input.code);
         else if (block.name === 'create_reservation') out = await ops.createReservation(block.input);
         else out = { error: 'unknown tool' };
         steps.push({ tool: block.name, label: stepLabel(block.name, block.input, out) });

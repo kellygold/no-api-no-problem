@@ -105,11 +105,11 @@ export class MarloweClient {
   //     directory (with our session) and match the caller's number ourselves. ---
   async identifyByPhone(phone) {
     await this._ensure();
-    const res = await this._fetch('/rezmaster/api/guests', { headers: { Accept: 'application/json' } });
-    if (!res.ok) throw new Error(`directory HTTP ${res.status}`);
-    const { guests } = await res.json();
+    const res = await this._fetch('/api/contacts', { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error(`contacts HTTP ${res.status}`);
+    const { contacts } = await res.json();
     const want = String(phone || '').replace(/\D/g, '').slice(-10);
-    const g = want.length >= 7 ? guests.find((x) => String(x.phone || '').replace(/\D/g, '').slice(-10) === want) : null;
+    const g = want.length >= 7 ? contacts.find((x) => String(x.phone || '').replace(/\D/g, '').slice(-10) === want) : null;
     return g ? { matched: true, guest: g } : { matched: false };
   }
 

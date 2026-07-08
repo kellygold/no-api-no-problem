@@ -12,9 +12,11 @@
 //   REZMASTER 4.2 PMS (front-desk login):
 //     GET/POST /rezmaster/login  session cookie + CSRF
 //     GET /rezmaster             staff dashboard
-//     GET /rezmaster/guests[/:id]  guest profile + negotiated rates (contact directory)
-//     GET /rezmaster/api/guests  the contact directory JSON (phone → contactId)
+//     GET /rezmaster/guests[/:id]  the target's HTML Guest Book + profile (no JSON)
 //     POST /rezmaster/reservations   create a booking  (Wall 3 — act, CSRF-protected)
+//
+//   OUR layer (what we build on top):
+//     GET /api/contacts          clean contact directory JSON, scraped from the Guest Book
 //
 // In-memory, deterministic, resets on restart. Not for production.
 
@@ -125,10 +127,13 @@ app.get('/api/availability', (req, res) => {
   }
   const checkin = req.query.checkin || TOMORROW;
   const checkout = req.query.checkout || addDays(checkin, 2);
-  // A contact's private rate + held inventory are only revealed to the logged-in business.
+  // A contact's private rate is only revealed to the logged-in business.
   const contact = req.session.staff && req.query.contactId ? guestById(req.query.contactId) : null;
+  // The held inventory is reserved for MEMBERS (corporate/loyalty/AAA — anyone with a
+  // negotiated rate). A STANDARD contact sees the public channel, same as anyone off the street.
+  const member = contact && contact.negotiatedPct > 0;
   const rooms = ROOMS.map((r) => {
-    const available = contact ? r.trueAvailable : r.publicAvailable;
+    const available = member ? r.trueAvailable : r.publicAvailable;
     const rate = contact ? negotiatedRate(contact, r) : r.rackRate;
     return {
       slug: r.slug,
@@ -136,9 +141,9 @@ app.get('/api/availability', (req, res) => {
       sleeps: r.sleeps,
       rate, // the price for THIS caller: rack, or the contact's negotiated rate
       rackRate: r.rackRate, // always present, so member savings are legible
-      available, // public channel count, or true inventory for a known contact
+      available, // members see true inventory (incl. held rooms); everyone else sees the public channel
       soldOut: available === 0,
-      held: contact ? r.trueAvailable - r.publicAvailable : 0,
+      held: member ? r.trueAvailable - r.publicAvailable : 0,
       photo: `/static/img/${r.photo}`,
     };
   });
@@ -235,13 +240,14 @@ app.get('/rezmaster/guests/:id', requireStaff, (req, res) => {
   });
 });
 
-// Authenticated internal guest directory (JSON). The PMS exposes the whole list to
-// the front desk — but there's NO "find by phone" operation (that's the gap). The
-// concierge replays this XHR with its session and matches the caller's number in
-// its own layer. Classic "replay the internal XHR, normalize in our code" move.
-app.get('/rezmaster/api/guests', requireStaff, (req, res) => {
+// OUR contact directory (clean JSON). The target only publishes an HTML "Guest Book"
+// at /rezmaster/guests (no JSON, no "find by phone"). WE scrape that page (and each
+// guest's detail page) and normalize it into this endpoint — hence /api/contacts lives
+// on OUR namespace, not the target's. Requires the business session, since the source
+// pages are login-gated. This is the directory the concierge matches a caller against.
+app.get('/api/contacts', requireStaff, (req, res) => {
   res.json({
-    guests: GUESTS.map((g) => ({
+    contacts: GUESTS.map((g) => ({
       id: g.id,
       name: g.name,
       email: g.email,
@@ -249,6 +255,7 @@ app.get('/rezmaster/api/guests', requireStaff, (req, res) => {
       loyaltyTier: g.loyaltyTier,
       corporateAccount: g.corporateAccount,
       ratePlan: ratePlanLabel(g),
+      cardOnFile: g.cardOnFile || null,
       arriving: g.arriving,
     })),
   });

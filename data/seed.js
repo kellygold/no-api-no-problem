@@ -88,6 +88,7 @@ export const GUESTS = [
     loyaltyTier: 'Gold',
     corporateAccount: 'Acme Corp',
     negotiatedPct: 0.18,
+    cardOnFile: 'Amex ending 1005', // revealed only after identity is verified
     notes: 'High floor, quiet room away from elevator. Allergic to feather bedding.',
     arriving: TOMORROW, // the demo protagonist
   },
